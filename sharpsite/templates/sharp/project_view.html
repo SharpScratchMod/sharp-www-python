@@ -1,0 +1,135 @@
+{% extends "sharp/base.html" %}
+
+{% block title %}
+	{% if project.state == "u" and not project.owner == user %}
+	Sharp
+	{% elif project.state == "u" and project.owner == user %}
+	{{ project.name }} - Unshared | Sharp
+	{% elif project.state == "s" %}
+	{{ project.name }} | Sharp
+	{% elif project.state == "c" %}
+	Sharp
+	{% elif project.state == "d" %}
+	Sharp
+	{% else %}
+	Huh! | Sharp
+	{% endif %}
+{% endblock %}
+
+{% block body %}
+	{% if project.state == "u" and not project.owner == user or not user.is_staff or not user.is_superuser %}
+	<div class="row">
+		<div class="col s12 m6">
+			<div class="card red accent-4">
+				<div class="card-content white-text">
+					<span class="card-title">Project is not shared</span>
+					<p>Sorry, This project is not shared yet</p>
+				</div>
+				<div class="card-action">
+					<a href="/create/">Create a project</a>
+					<a href="/">Sharp home</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% elif project.state == "c" and not project.owner == user or not user.is_staff or not user.is_superuser %}
+	<div class="row">
+		<div class="col s12 m6">
+			<div class="card red accent-4">
+				<div class="card-content white-text">
+					<span class="card-title">Project has been censored</span>
+					<p>Sorry, This project has been censored because it broke the community guidelines</p>
+				</div>
+				<div class="card-action">
+					<a href="/community_guidelines/">Review community guidelines</a>
+					<a href="/">Sharp home</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% elif project.state == "d" %}
+	<div class="row">
+		<div class="col s12 m6">
+			<div class="card red accent-4">
+				<div class="card-content white-text">
+					<span class="card-title">Project has been deleted</span>
+					<p>Sorry, This project has been deleted by its owner</p>
+				</div>
+				<div class="card-action">
+					<a href="/create/">Create a project</a>
+					<a href="/">Sharp home</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% else %}
+		{% if project.state == "u" %}
+		<div class="row">
+			<div class="col s12 m6">
+				<div class="card red accent-4">
+					<div class="card-content white-text">
+						<span class="card-title">This project is unshared!</span>
+						<p>Would you like to share it?</p>
+					</div>
+					<div class="card-action">
+						<a href="share/">Share</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% elif project.state == "c" %}
+		<div class="row">
+			<div class="col s12 m6">
+				<div class="card red accent-4">
+					<div class="card-content white-text">
+						<span class="card-title">This project has been censored!</span>
+						<p>Would you like to request it to be reviewed?</p>
+					</div>
+					<div class="card-action">
+						<a href="share/">Request review</a>
+						<a href="delete/">Delete</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+		<h1>{{ project.name }}</h1>
+		<div class="row">
+			<div class="col s6 white">
+				<object id='sharp' style='visibility: visible;' data="/static/sharp/Sharp.swf" type="application/x-swf-application" height="500px" width="100%">
+					<param value="always" name="allowscriptaccess">
+					<param value="true" name="allowfullscreen">
+					<param value="direct" name="wmode">
+					<param value="false" name="menu">
+					<param value="asPlayer=true&autostart=false&sharp_pid={{ project.id }}&sharp_save_path=/uploads/projects/&sharp_save_format=.sharp&sharp_domain=http://localhost:8000&sharp_owner={{ project.owner.username }}&sharp_public={% if project.state == 's' %}true{% else %}false{% endif %}&sharp_can_share={% if not project.state == 'u' %}false{% else %}true{% endif %}" name="flashvars">
+				</object>
+			</div>
+			<div class="col s6 white">
+				<a href="#editor"><div class="section light-blue darken-4 white-text">
+					<h5><i class="material-icons">mode edit</i> See inside</h5>
+				</div></a>
+				<div class="divider"></div>
+				<div class="section">
+					<h5>Notes</h5>
+					<p editable id='notes'>{{ project.notes }}</p>
+				</div>
+				<div class="divider"></div>
+				<div class="section">
+					<h5>Credits</h5>
+					<p editable id='credits'>{{ project.proj_credits }}</p>
+				</div>
+				{% if user.is_staff or user.is_superuser %}
+				<div class="divider"></div>
+				<div class="section red accent-4 white-text">
+					<h5>Administration Panel</h5>
+					<p>
+						<a href="admin_censor_uncensor/" class="white-text"><i class="material-icons">block</i> Toggle project censorship status</a><br>
+						<a href="delete/" class="white-text"><i class="material-icons">delete</i> Delete this project</a><br>
+						<p editable id='notes'>{{ project.admin_notes }}</p>
+					</p>
+				</div>
+				{% endif %}
+			</div>
+		</div>
+	{% endif %}
+{% endblock %}

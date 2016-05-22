@@ -1,0 +1,61 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% block title %}Sharp{% endblock %}</title>
+        <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link href="/static/css/materialize.min.css" rel="stylesheet" media="screen,projection">
+		<script type="text/javascript" src="/static/js/jquery.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<script>var csrf = "{{ csrf_token }}";</script>
+    </head>
+    <body>
+        <nav class="blue">
+            <div class="nav-wrapper">
+                <a href="/" class="brand-logo">Sharp {% if data.dev %}<i style='display:inline'>Development Server</i>{% elif data.staging %}<i style='display:inline'>Staging Server</i>{% endif %}</a>
+                <ul id="nav-mobile" class="right hide-on-med-and-down">
+                    <li><a href="/create/">Create</a></li>
+					{% if user.is_superuser %}
+					<li><a href="/admin/" class="red accent-4">Admin</a></li>
+					{% endif %}
+                    {% if not auth %}
+                        <li><a href="/accounts/login/">Login</a></li>
+                        <li><a href="/accounts/register/">Register</a></li>
+                    {% else %}
+                        <li><a href="/users/">{{ user.username }}</a></li>
+                        <li><a href="/accounts/logout/">Logout</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+        <content>
+            {% block body %}{% endblock %}
+        </content>
+        <footer class="page-footer light-blue">
+            <div class="container">
+                <div class="row">
+                    <div class="col l6 s12">
+                        <h5 class="white-text">Sharp</h5>
+                        <p class="grey-text text-lighten-4">This is the Sharp sharing site</p>
+                    </div>
+                    <div class="col l4 offset-12 s12">
+                        <h5 class="white-text">Links</h5>
+                        <ul>
+                            <li><a class="grey-text text-lighten-3" href="https://github.com/SharpScratchMod/sharp-www">Website Source Code</a></li>
+                            <li><a class="grey-text text-lighten-3" href="/create/">Create a project</a></li>
+                            <li><a class="grey-text text-lighten-3" href="/contact/">Contact Us</a></li>
+                         </ul>
+                    </div>
+                </div>
+           </div>
+		   <div class="footer-copyright">
+			   <div class="container">
+				   © 2016 The Sharp Developers
+				   <a class="grey-text text-lighten-4 right" href="https://sharpscratchmod.github.com">The Offical Sharp Website</a>
+			   </div>
+		   </div>
+        </footer>
+        <!---->
+        <script type="text/javascript" src="/static/js/materialize.min.js"></script>
+    </body>
+</html>

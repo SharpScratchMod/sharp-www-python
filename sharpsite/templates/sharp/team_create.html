@@ -1,0 +1,49 @@
+{% extends "sharp/base.html" %}
+
+{% block title %}Create a new team | Sharp{% endblock %}
+{% block body %}
+<h3>New team</h3>
+<center id='loader' style='display:none'>
+	<div class="preloader-wrapper big active">
+		{% include "sharp/loader-inner.html" %}
+	</div>
+</center>
+<div class="row">
+	<form class="col s12">
+		<div class="row">
+			<div class="input-field col s6">
+				<input id="team_name" type="text">
+				<label for="team_name">Team Name</label>
+			</div>
+			<div class="input-field col s6">
+				<input id="team_id" type="text" placeholder="{{ data.url }}team/(team id here)">
+				<label for="team_id">Team ID</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="input-field col s12">
+				<textarea id="team_desc" class="materialize-textarea"></textarea>
+				<label for="team_desc">Team Description</label>
+			</div>
+		</div>
+		<button class="btn waves-effect waves-light light-green" type="button" id="create">Create new team
+			<i class="material-icons right">add</i>
+		</button> 
+		<button class="btn waves-effect waves-light red" type="reset">Reset form
+			<i class="material-icons right">clear</i>
+		</button>
+		<script>$("#create").click(function(){
+			$("#loader").show();
+			$.post("/new_team/", {name: $("#team_name").val(), id: $("#team_id").val(), desc: $("#team_desc").val(), csrfmiddlewaretoken: csrf}, function(data){
+				if(data == "ok"){
+					document.location = "/teams/" + $("#team_id").val();
+				}else{
+					Materialize.toast("Could not create the team!", 4000);
+				}
+				$("#loader").hide();
+			}, "text");
+		});</script>
+  </div>
+	</form>
+</div>
+{% endblock %}

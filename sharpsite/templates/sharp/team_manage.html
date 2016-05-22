@@ -1,0 +1,130 @@
+{% extends "sharp/base.html" %}
+
+{% block title %}{{ team.name }} | Sharp{% endblock %}
+{% block body %}
+<div class="container">
+	<h1>{{ team.name }} Settings</h1>
+	<div class="row">
+		<div class="col s12">
+			<ul class="tabs">
+				{% if member_perm.edit_notes %}<li class="tab col s3"><a href="#settings">Settings</a></li>{% else %}<li class="tab col s3"><a href="#settings" disabled>Settings</a></li>{% endif %}
+				<li class="tab col s3"><a href="#members">Members</a></li>
+				<li class="tab col s3"><a href="#ranks">Ranks</a></li>
+				<li class="tab col s3"><a href="#delete">Delete or move team</a></li>
+			</ul>
+		</div>
+		<center id='loader' style='display:none'>
+			<div class="preloader-wrapper big active">
+				{% include "sharp/loader-inner.html" %}
+			</div>
+		</center>
+		<div id='settings' class='col s12'>
+			<form>
+				<div class="row">
+					<div class="input-field col s6">
+						<input type="text" id="name" value="{{ team.name }}">
+						<label for="name">Team Name</label>
+					</div>
+					<div class="input-field col s6">
+						<input type="text" id="id" disabled value="{{ team.tid }}">
+						<label for="id">Team ID</label>
+					</div>
+				</div>
+				<div class="row">
+					<div class="input-field col s12">
+						<textarea id="note" class="materialize-textarea">{{ team.notes }}</textarea>
+						<label for="note">Team Notes</label>
+					</div>
+				</div>
+				<button class="btn waves-effect waves-light light-green" type="button" id="save">Save settings
+				</button>
+				<script>
+				$("#save").click(function(){
+					$("#loader").show();
+					$.post("update_save/", {
+						name: $("#name").val(),
+						notes: $("#note").val(),
+						csrfmiddlewaretoken: csrf
+					}, function(data){
+						if(data == "ok"){
+							$("#loader").hide();
+						}else{
+							$("#loader").hide();
+							Materialize.toast('Could not update the settings! ', 4000);
+						}
+					}, "text");
+				});
+				</script>
+			</form>
+		</div>
+		<div id='members' class='col s12'>
+			<ul class="collection with-header">
+				<li class="collection-header"><h4>Members</h4></li>
+				{% for member in members %}
+				<li class="collection-item"><div>
+					{{ member.member.username }}
+					<span class="secondary-content">
+						{{ member.rank.name }}
+						{% if not member.rank.name == 'Owner' and not member.rank.invited and not member.rank.blocked %}<a href="#!" do='rank-change' user-id='{{ member.id }}' class="tooltipped" data-position="top" data-delay=50 data-tooltip='Change rank'><i class="material-icons">settings</i></a>{% endif %}
+						{% if not member.rank.name == 'Owner' %}<a href="#!" do='remove' user-id='{{ member.id }}' class="tooltipped" data-position="top" data-delay=50 data-tooltip='Remove member'><i class="material-icons">clear</i></a>{% endif %}
+					</span>
+				</div></li>
+				{% endfor %}
+			</ul>
+		</div>
+		<div id='ranks' class='col s12'>
+			<ul class="collection with-header">
+				<li class="collection-header"><h4>Ranks</h4></li>
+				{% for rank in ranks %}
+				<li class="collection-item"><div>
+					{{ rank.name }} {% if rank.name == "Owner" or rank.name == "Member" or rank.name == "Invited" or rank.name == "Guest" or rank.name == "Blocked" %}<i class="material-icons tooltipped" style='color:red' data-position="right" data-delay=50 data-tooltip="SPECIAL RANK: Some options may be unavailable">warning</i>{% endif %}
+					<span class="secondary-content">
+						<!--<select multiple browser-default>
+							<option value="add_comments" {%if rank.add_comment%}selected{%endif%}>Add comments</option>
+							<option value="delete_comments" {%if rank.delete_comment%}selected{%endif%}>Delete comments</option>
+							<option value="rm_member" {%if rank.rm_member%}selected{%endif%}>Remove member</option>
+							<option value="demote_lower_member" {%if rank.demote_lower_member%}selected{%endif%}>Demote lower member</option>
+							<option value="demote_equal_member" {%if rank.demote_equal_member%}selected{%endif%}>Demote equal member</option>
+							<option value="demote_higher_member" {%if rank.demote_higher_member%}selected{%endif%}>Demote higher member</option>
+							<option value="promote_to_equal" {%if rank.promote_to_equal%}selected{%endif%}>Promote to or less then equal</option>
+							<option value="promote_to_higher" {%if rank.promote_to_higher%}selected{%endif%}>Promote to higher</option>
+							<option value="invite_member" {%if rank.invite_member%}selected{%endif%}>Invite member</option>
+							<option value="block_member" {%if rank.block_member%}selected{%endif%}>Block member</option>
+							<option value="edit_ranks" {%if rank.edit_ranks%}selected{%endif%}>Edit ranks (Like you are doing)</option>
+							<option value="delete_team" {%if rank.delete_team%}selected{%endif%}>Delete the team</option>
+							<option value="edit_notes" {%if rank.edit_notes%}selected{%endif%}>Edit the notes and name of the team</option>
+						</select>-->
+						<a href="#!" do="edit-rank" rank-id="{{ rank.id }}" class="tooltipped" data-position='top' data-delay=50 data-tooltip='Edit rank'><i class="material-icons">settings</i></a>
+						{% if not rank.name == "Owner" or not rank.name == "Member" or not rank.name == "Invited" or not rank.name == "Guest" or not rank.name == "Blocked" %}<a href="#!" do="delete-rank" rank-id="{{ rank.id }}" class="tooltipped" data-position='top' data-delay=50 data-tooltip='Delete rank'><i class="material-icons">delete</i></a>{% endif %}
+					</span>
+				</div></li>
+				{% endfor %}
+			</ul>
+		</div>
+		<div id='delete' class='col s12'>
+			<div class="row">
+				<div class="col s12 m6">
+					<div class="card red accent-4">
+						<div class="card-content white-text">
+							<span class="card-title">Dangerous actions</span>
+							<p>The following options can cause unwanted effects like the following:</p>
+							<ul>
+								<li>* Old messages will be broken</li>
+								<li>* Links will be broken</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+			<h4>Delete team</h4>
+			<button id='delete-team' class='btn waves-effect waves-light red'>Delete this team <i class='material-icons'>delete</i></button>
+			<h4>Move team</h4>
+			<div class="input-field">
+				<input type="text" id='new-id' value='{{ team.tid }}'>
+				<label for="new-id">New ID for team</label>
+			</div>
+			<button id='delete-team' class='btn waves-effect waves-light red'>Change team id <i class='material-icons'>edit</i></button>
+		</div>
+	</div>
+</div>
+{% endblock %}
